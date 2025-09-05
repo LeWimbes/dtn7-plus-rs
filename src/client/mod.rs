@@ -25,7 +25,7 @@ pub enum ClientError {
     #[error("message not utf8: {0}")]
     NonUtf8(#[from] std::string::FromUtf8Error),
     #[error("serde cbor error: {0}")]
-    Cbor(#[from] serde_cbor::Error),
+    Cbor(#[from] ciborium::de::Error<std::io::Error>),
     #[error("serde json error: {0}")]
     Json(#[from] serde_json::Error),
     #[error("http connection error: {0}")]

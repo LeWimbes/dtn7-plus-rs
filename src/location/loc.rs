@@ -123,31 +123,31 @@ mod tests {
     #[test]
     fn test_loc_lonlat_roundtrip() {
         let loc = Location::LatLon((23.0, 42.0));
-        let buf = serde_cbor::to_vec(&loc).unwrap();
-        let loc2 = serde_cbor::from_slice(&buf).unwrap();
+        let buf = crate::serde::to_cbor_vec(&loc).unwrap();
+        let loc2 = crate::serde::from_cbor_slice(&buf).unwrap();
         assert_eq!(loc, loc2);
     }
     #[test]
     fn test_loc_xy_roundtrip() {
         let loc = Location::XY((23.0, 42.0));
-        let buf = serde_cbor::to_vec(&loc).unwrap();
-        let loc2 = serde_cbor::from_slice(&buf).unwrap();
+        let buf = crate::serde::to_cbor_vec(&loc).unwrap();
+        let loc2 = crate::serde::from_cbor_slice(&buf).unwrap();
         assert_eq!(loc, loc2);
     }
 
     #[test]
     fn test_loc_human_roundtrip() {
         let loc = Location::Human("Bahnhofstr 23, 12345 Nirgendwo".into());
-        let buf = serde_cbor::to_vec(&loc).unwrap();
-        let loc2 = serde_cbor::from_slice(&buf).unwrap();
+        let buf = crate::serde::to_cbor_vec(&loc).unwrap();
+        let loc2 = crate::serde::from_cbor_slice(&buf).unwrap();
         assert_eq!(loc, loc2);
     }
 
     #[test]
     fn test_loc_wfw_roundtrip() {
         let loc = Location::WFW("SINKUT-MEIJER-BETSUKAI".into());
-        let buf = serde_cbor::to_vec(&loc).unwrap();
-        let loc2 = serde_cbor::from_slice(&buf).unwrap();
+        let buf = crate::serde::to_cbor_vec(&loc).unwrap();
+        let loc2 = crate::serde::from_cbor_slice(&buf).unwrap();
         assert_eq!(loc, loc2);
     }
 }

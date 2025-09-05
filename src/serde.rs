@@ -69,3 +69,19 @@ pub mod base64_or_bytes {
         }
     }
 }
+
+/// Convert a value to a CBOR-encoded vector
+pub fn to_cbor_vec<T: serde::ser::Serialize>(
+    val: &T,
+) -> Result<Vec<u8>, ciborium::ser::Error<std::io::Error>> {
+    let mut buf = Vec::new();
+    ciborium::into_writer(val, &mut buf)?;
+    Ok(buf)
+}
+
+/// Convert a CBOR-encoded vector back into a value
+pub fn from_cbor_slice<T: serde::de::DeserializeOwned>(
+    b: &[u8],
+) -> Result<T, ciborium::de::Error<std::io::Error>> {
+    ciborium::from_reader(b)
+}
