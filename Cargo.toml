@@ -18,7 +18,7 @@ bp7 = "0.10.7"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.143"
 serde_bytes = { version = "0.11.17", optional = true }
-serde_cbor = { version = "0.11.2", optional = true }
+minicbor-serde = { version = "0.6.0", features = ["alloc"], optional = true }
 attohttpc = { version = "0.30.1", default-features = false, optional = true }
 smaz = { version = "0.1.0", optional = true }
 thiserror = "2.0.16"
@@ -36,7 +36,7 @@ base64 = "0.22.1"
 client = ["attohttpc", "tungstenite", "anyhow", "common"]
 sms = ["smaz", "common"]
 news = ["smaz", "common", "uuid"]
-common = ["serde_bytes", "serde_cbor"]
+common = ["serde_bytes", "minicbor-serde"]
 default = ["sms", "client", "location", "cli", "news", "common"]
 location = ["derive-try-from-primitive", "common", "bitflags"]
 cli = ["clap", "humantime", "client", "anyhow"]

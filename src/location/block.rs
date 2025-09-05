@@ -12,7 +12,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum LocationError {
     #[error("serde cbor error: {0}")]
-    Cbor(#[from] serde_cbor::Error),
+    Cbor(#[from] minicbor_serde::error::DecodeError),
     #[error("failed to create endpoint: {0}")]
     EndpointIdInvalid(#[from] bp7::eid::EndpointIdError),
     #[error("invalid endpoint supplied")]
@@ -171,14 +171,14 @@ pub fn new_location_block(block_number: u64, data: LocationBlockData) -> Canonic
         LOCATION_BLOCK,
         block_number,
         0,
-        CanonicalData::Unknown(serde_cbor::to_vec(&data).unwrap_or_default()),
+        CanonicalData::Unknown(minicbor_serde::to_vec(&data).unwrap_or_default()),
     )
 }
 
 pub fn get_location_data(cblock: &CanonicalBlock) -> Result<LocationBlockData, LocationError> {
     if cblock.block_type == LOCATION_BLOCK {
         if let CanonicalData::Unknown(data) = cblock.data() {
-            serde_cbor::from_slice(data).map_err(|_err| LocationError::InvalidLocationBlock)
+            minicbor_serde::from_slice(data).map_err(|_err| LocationError::InvalidLocationBlock)
         } else {
             Err(LocationError::InvalidLocationBlock)
         }
@@ -200,8 +200,8 @@ mod tests {
     fn test_locblock_data_position_roundtrip() {
         let loc = Location::LatLon((23.0, 42.0));
         let data = LocationBlockData::Position(NodeTypeFlags::MOBILE, loc);
-        let buf = serde_cbor::to_vec(&data).unwrap();
-        let data2 = serde_cbor::from_slice(&buf).unwrap();
+        let buf = minicbor_serde::to_vec(&data).unwrap();
+        let data2 = minicbor_serde::from_slice(&buf).unwrap();
         assert_eq!(data, data2);
     }
 
@@ -209,8 +209,8 @@ mod tests {
     fn test_locblock_data_fence_ellipse_roundtrip() {
         let loc = Location::LatLon((23.0, 42.0));
         let data = LocationBlockData::FenceEllipse(loc, 10, 5);
-        let buf = serde_cbor::to_vec(&data).unwrap();
-        let data2 = serde_cbor::from_slice(&buf).unwrap();
+        let buf = minicbor_serde::to_vec(&data).unwrap();
+        let data2 = minicbor_serde::from_slice(&buf).unwrap();
         assert_eq!(data, data2);
     }
 
@@ -219,8 +219,8 @@ mod tests {
         let loc = Location::LatLon((23.0, 42.0));
         let loc2 = Location::LatLon((42.0, 66.0));
         let data = LocationBlockData::FenceRect(loc, loc2);
-        let buf = serde_cbor::to_vec(&data).unwrap();
-        let data2 = serde_cbor::from_slice(&buf).unwrap();
+        let buf = minicbor_serde::to_vec(&data).unwrap();
+        let data2 = minicbor_serde::from_slice(&buf).unwrap();
         assert_eq!(data, data2);
     }
     #[test]
@@ -231,8 +231,8 @@ mod tests {
             EndpointID::try_from("dtn://node1").unwrap(),
             loc,
         );
-        let buf = serde_cbor::to_vec(&data).unwrap();
-        let data2 = serde_cbor::from_slice(&buf).unwrap();
+        let buf = minicbor_serde::to_vec(&data).unwrap();
+        let data2 = minicbor_serde::from_slice(&buf).unwrap();
         assert_eq!(data, data2);
     }
 
@@ -243,7 +243,7 @@ mod tests {
 
         let cblock = new_location_block(1, data.clone());
         let buf = cblock.to_cbor();
-        let cblock2 = serde_cbor::from_slice(&buf).unwrap();
+        let cblock2 = minicbor_serde::from_slice(&buf).unwrap();
         assert_eq!(cblock, cblock2);
         let data2 = get_location_data(&cblock2).unwrap();
         assert_eq!(data, data2);

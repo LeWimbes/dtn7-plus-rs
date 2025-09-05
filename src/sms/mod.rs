@@ -10,7 +10,7 @@ pub enum SmsError {
     #[error("message not utf8: {0}")]
     NonUtf8(#[from] std::string::FromUtf8Error),
     #[error("serde cbor error: {0}")]
-    Cbor(#[from] serde_cbor::Error),
+    Cbor(#[from] minicbor_serde::error::DecodeError),
     #[error("failed to decompress message: {0}")]
     SmazDecompress(#[from] smaz::DecompressError),
     #[error("failed to create endpoint: {0}")]
@@ -78,7 +78,7 @@ impl SMSBundle {
         }
         // Validate general payload
         let payload = self.0.payload().ok_or(SmsError::PayloadMissing)?;
-        let sms: SMS = serde_cbor::from_slice(payload)?;
+        let sms: SMS = minicbor_serde::from_slice(payload)?;
 
         // Validate payload message and compression
         if sms.comp {
@@ -118,7 +118,7 @@ impl SMSBundle {
     pub fn sms(&self) -> SMS {
         let payload = self.0.payload().expect("missing payload in bundle");
 
-        serde_cbor::from_slice(payload).expect("error decoding sms payload")
+        minicbor_serde::from_slice(payload).expect("error decoding sms payload")
     }
     pub fn compression(&self) -> bool {
         self.sms().compression()
@@ -246,7 +246,8 @@ pub fn new_sms(src: u64, dst: u64, msg: &str, compression: bool) -> Result<SMSBu
         .build()?;
     let cblocks = vec![canonical::new_payload_block(
         BlockControlFlags::empty(),
-        serde_cbor::to_vec(&payload).expect("Fatal failure, could not convert sms payload to CBOR"),
+        minicbor_serde::to_vec(&payload)
+            .expect("Fatal failure, could not convert sms payload to CBOR"),
     )];
 
     Ok(SMSBundle::try_from(bundle::Bundle::new(pblock, cblocks))

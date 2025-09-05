@@ -14,7 +14,7 @@ pub enum NewsError {
     #[error("message not utf8: {0}")]
     NonUtf8(#[from] std::string::FromUtf8Error),
     #[error("serde cbor error: {0}")]
-    Cbor(#[from] serde_cbor::Error),
+    Cbor(#[from] minicbor_serde::error::DecodeError),
     #[error("failed to decompress message: {0}")]
     SmazDecompress(#[from] smaz::DecompressError),
     #[error("failed to create endpoint: {0}")]
@@ -129,7 +129,7 @@ impl NewsBundle {
 
         // Validate general payload
         let payload = self.0.payload().ok_or(NewsError::PayloadMissing)?;
-        let news: News = serde_cbor::from_slice(payload)?;
+        let news: News = minicbor_serde::from_slice(payload)?;
 
         // Validate payload message and compression
         if news.comp {
@@ -169,7 +169,7 @@ impl NewsBundle {
     pub fn news(&self) -> News {
         let payload = self.0.payload().expect("missing payload in bundle");
 
-        serde_cbor::from_slice(payload).expect("error decoding news payload")
+        minicbor_serde::from_slice(payload).expect("error decoding news payload")
     }
     pub fn compression(&self) -> bool {
         self.news().compression()
@@ -396,7 +396,7 @@ pub fn new_news(
     };
     let cblocks = vec![canonical::new_payload_block(
         BlockControlFlags::empty(),
-        serde_cbor::to_vec(&payload)
+        minicbor_serde::to_vec(&payload)
             .expect("Fatal failure, could not convert news payload to CBOR"),
     )];
 
@@ -430,7 +430,7 @@ pub fn reply_news(
 
     let cblocks = vec![canonical::new_payload_block(
         BlockControlFlags::empty(),
-        serde_cbor::to_vec(&payload)
+        minicbor_serde::to_vec(&payload)
             .expect("Fatal failure, could not convert news payload to CBOR"),
     )];
 
